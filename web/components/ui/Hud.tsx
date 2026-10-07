@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { setMuted } from "@/lib/ambience";
+import { setMuted } from "@/lib/sound";
 import { useField } from "@/lib/store";
 
 export function Hud() {

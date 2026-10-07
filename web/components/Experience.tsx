@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useField } from "@/lib/store";
 import { Hud } from "./ui/Hud";
+import { NowPlaying } from "./ui/NowPlaying";
 import { Pause } from "./ui/Pause";
 import { Reader } from "./ui/Reader";
 import { Threshold } from "./ui/Threshold";
@@ -21,6 +22,7 @@ export function Experience() {
   return (
     <main className="experience">
       <Field />
+      <NowPlaying />
       {entered && (
         <>
           <Hud />

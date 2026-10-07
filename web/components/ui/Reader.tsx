@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { setHush } from "@/lib/ambience";
+import { setHush } from "@/lib/sound";
 import { hold } from "@/lib/shared";
 import { useField } from "@/lib/store";
 

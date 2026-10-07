@@ -11,6 +11,7 @@ type FieldState = {
   locked: boolean;
   touch: boolean;
   planting: boolean;
+  music: "song" | "ambient";
   aimedId: string | null;
   readingId: string | null;
   extinguished: Set<string>;
@@ -19,6 +20,7 @@ type FieldState = {
   setLocked: (locked: boolean) => void;
   setTouch: (touch: boolean) => void;
   setPlanting: (open: boolean) => void;
+  setMusic: (music: "song" | "ambient") => void;
   aim: (id: string | null) => void;
   setReading: (id: string | null) => void;
   extinguish: (id: string) => void;
@@ -33,6 +35,7 @@ export const useField = create<FieldState>((set, get) => ({
   locked: false,
   touch: false,
   planting: false,
+  music: "song",
   aimedId: null,
   readingId: null,
   extinguished: new Set(),
@@ -42,6 +45,7 @@ export const useField = create<FieldState>((set, get) => ({
   setLocked: (locked) => set({ locked }),
   setTouch: (touch) => set({ touch }),
   setPlanting: (planting) => set({ planting }),
+  setMusic: (music) => set({ music }),
   aim: (id) => {
     if (get().aimedId !== id) set({ aimedId: id });
   },

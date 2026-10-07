@@ -1,6 +1,6 @@
 "use client";
 
-import { startAmbience } from "@/lib/ambience";
+import { startSound } from "@/lib/sound";
 import { requestLock } from "@/lib/lock";
 import { useField } from "@/lib/store";
 
@@ -9,7 +9,7 @@ export function Threshold() {
   const enter = useField((s) => s.enter);
 
   const go = () => {
-    startAmbience();
+    startSound();
     enter();
     requestLock();
   };
