@@ -7,11 +7,20 @@ type FieldState = {
   stalks: Stalk[];
   entered: boolean;
   muted: boolean;
-  focusedId: string | null;
+  // pointer lock is on, so the mouse steers the view
+  locked: boolean;
+  touch: boolean;
+  planting: boolean;
+  aimedId: string | null;
+  readingId: string | null;
   extinguished: Set<string>;
   enter: () => void;
   toggleMute: () => void;
-  focus: (id: string | null) => void;
+  setLocked: (locked: boolean) => void;
+  setTouch: (touch: boolean) => void;
+  setPlanting: (open: boolean) => void;
+  aim: (id: string | null) => void;
+  setReading: (id: string | null) => void;
   extinguish: (id: string) => void;
   plant: (stalk: Stalk) => void;
   hydrate: () => void;
@@ -21,12 +30,22 @@ export const useField = create<FieldState>((set, get) => ({
   stalks: seedField(),
   entered: false,
   muted: false,
-  focusedId: null,
+  locked: false,
+  touch: false,
+  planting: false,
+  aimedId: null,
+  readingId: null,
   extinguished: new Set(),
 
   enter: () => set({ entered: true }),
   toggleMute: () => set((s) => ({ muted: !s.muted })),
-  focus: (id) => set({ focusedId: id }),
+  setLocked: (locked) => set({ locked }),
+  setTouch: (touch) => set({ touch }),
+  setPlanting: (planting) => set({ planting }),
+  aim: (id) => {
+    if (get().aimedId !== id) set({ aimedId: id });
+  },
+  setReading: (readingId) => set({ readingId }),
 
   extinguish: (id) => {
     const next = new Set(get().extinguished);
@@ -37,7 +56,11 @@ export const useField = create<FieldState>((set, get) => ({
 
   plant: (stalk) => set((s) => ({ stalks: [...s.stalks, stalk] })),
 
-  hydrate: () => set({ extinguished: new Set(loadExtinguished()) }),
+  hydrate: () =>
+    set({
+      extinguished: new Set(loadExtinguished()),
+      touch: window.matchMedia("(pointer: coarse)").matches,
+    }),
 }));
 
 export function isEmber(stalk: Stalk) {
