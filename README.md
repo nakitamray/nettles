@@ -1,14 +1,14 @@
 # nettles
 
-An anonymous field for unsent letters.
+A quiet field for the things you never got to say.
 
-Every letter grows as a nettle in a dark, overgrown field. Most stay buried and
-silent. A few glow like embers, and you can walk up to one and press and hold
-to read it. Let go too early and the words disappear. Once you've read it all
-the way through, it goes dark for you for good.
+Every letter grows as a nettle in a misty field under weeping willows. Most
+are buried and stay silent. A few glow softly, and if you walk up to one and
+hold, you can read it. Let go too early and the words slip away. Once you've
+read it all the way through, its light goes out for you, and it gets to rest.
 
-There are no profiles, likes or replies. You wander, you read, you leave
-something behind if you want to.
+There are no profiles, likes or replies. It's meant to be a soft place to be
+honest. You wander, you read, you set something down if you want to.
 
 Inspired by the Southern Gothic mood of Ethel Cain's music.
 
@@ -28,8 +28,11 @@ Inspired by the Southern Gothic mood of Ethel Cain's music.
 - `api/` (coming): Python, FastAPI, PyTorch, umap-learn
 - Supabase (Postgres + pgvector)
 
-The ambient sound is generated in the browser with the Web Audio API, so
-there are no audio files.
+Sound: if `web/public/audio/ambience.mp3` exists it loops in the background.
+If it doesn't, a soft pad with chimes and birdsong is generated in the browser.
+
+Fonts: the handwriting fonts are licensed separately, so they aren't in this
+repo. Free Google fonts are used in their place.
 
 ## Running it
 
@@ -41,12 +44,18 @@ npm run dev
 
 Then open http://localhost:3000.
 
+Click into the field to start. It works like a first-person game:
+
 | | |
 | --- | --- |
-| look around | drag |
-| walk | click the ground, or WASD / arrow keys |
-| read | click a glowing ember, then press and hold (or hold space) |
-| step back | Esc |
+| look around | mouse |
+| walk / step back | W / S |
+| drift sideways | A / D |
+| read | point at a glowing letter and hold click (or space) |
+| pause | Esc |
+| mute | M |
+
+On phones you drag to look around, and there are buttons for walking and reading.
 
 ## How the field works
 
@@ -55,6 +64,11 @@ Then open http://localhost:3000.
 - Grass wraps around the camera, so the field never runs out.
 - Only four point lights exist. Each frame they move to the embers closest
   to you.
+- The willows are built in code: tapered trunks, arching limbs and a few
+  hundred hanging strands. Each strand carries its own sway weight, so the
+  tips move the most.
+- The beams of light are slanted quads that turn to face you around the
+  sun's direction, blended additively into the mist.
 - The tree line moves with you, so you can never reach it.
 - Read embers are remembered in `localStorage` for now. They'll move to the
   `ephemeral_reads` table once the backend is up.
