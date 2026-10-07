@@ -1,34 +1,34 @@
 import type { Metadata, Viewport } from "next";
-import { IM_Fell_English, League_Spartan } from "next/font/google";
+import { Reenie_Beanie, Shadows_Into_Light_Two } from "next/font/google";
 import "./globals.css";
 
-const spartan = League_Spartan({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-spartan",
-});
-
-const fell = IM_Fell_English({
+// Free stand-ins. The licensed fonts in public/fonts/licensed take over when present.
+const handwriting = Shadows_Into_Light_Two({
   subsets: ["latin"],
   weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-fell",
+  variable: "--font-hand",
+});
+
+const ballpoint = Reenie_Beanie({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-pen",
 });
 
 export const metadata: Metadata = {
   title: "Nettles",
-  description: "A field for the letters you never sent.",
+  description: "A quiet field for the things you never got to say.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#14160f",
+  themeColor: "#d8ceac",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${spartan.variable} ${fell.variable}`}>
+    <html lang="en" className={`${handwriting.variable} ${ballpoint.variable}`}>
       <body>{children}</body>
     </html>
   );

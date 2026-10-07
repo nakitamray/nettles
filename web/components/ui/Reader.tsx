@@ -1,27 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { setHush } from "@/lib/drone";
+import { setHush } from "@/lib/ambience";
 import { hold } from "@/lib/shared";
 import { useField } from "@/lib/store";
 
 const REVEAL_MS = 3000;
 
-type Phase = "waiting" | "holding" | "fading" | "gone";
+type Phase = "idle" | "holding" | "fading";
 
 export function Reader() {
-  const focusedId = useField((s) => s.focusedId);
-  const stalk = useField((s) => s.stalks.find((x) => x.id === s.focusedId));
-  if (!focusedId || !stalk?.text) return null;
-  // keyed so every ember opens with a clean slate
-  return <Letter key={focusedId} id={focusedId} text={stalk.text} />;
-}
+  const aimedId = useField((s) => s.aimedId);
+  const readingId = useField((s) => s.readingId);
+  const touch = useField((s) => s.touch);
+  const text = useField((s) => s.stalks.find((x) => x.id === s.readingId)?.text);
 
-function Letter({ id, text }: { id: string; text: string }) {
-  const focus = useField((s) => s.focus);
-  const extinguish = useField((s) => s.extinguish);
-
-  const [phase, setPhase] = useState<Phase>("waiting");
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [rested, setRested] = useState(false);
   const letter = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
   const read = useRef(false);
@@ -32,9 +27,13 @@ function Letter({ id, text }: { id: string; text: string }) {
   };
 
   const start = useCallback(() => {
-    if (phase === "fading" || phase === "gone" || hold.active) return;
+    const { aimedId, locked, touch, planting, readingId, setReading } = useField.getState();
+    if (!aimedId || readingId || planting || !(locked || touch)) return;
     hold.active = true;
+    read.current = false;
+    setReading(aimedId);
     setPhase("holding");
+    setReveal(0);
     setHush(1);
     let last = performance.now();
     const tick = (now: number) => {
@@ -45,89 +44,93 @@ function Letter({ id, text }: { id: string; text: string }) {
       frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);
-  }, [phase]);
+  }, []);
 
   const release = useCallback(() => {
     if (!hold.active) return;
     hold.active = false;
     cancelAnimationFrame(frame.current);
     setHush(0);
+    const { readingId, setReading, extinguish } = useField.getState();
 
-    if (read.current) {
+    if (read.current && readingId) {
+      // read all the way through: let it fade, then the ember goes out
       setPhase("fading");
-      extinguish(id);
-      window.setTimeout(() => setPhase("gone"), 1600);
-      window.setTimeout(() => focus(null), 2600);
+      extinguish(readingId);
+      window.setTimeout(() => {
+        setReading(null);
+        setPhase("idle");
+        setReveal(0);
+        setRested(true);
+      }, 1500);
+      window.setTimeout(() => setRested(false), 5000);
     } else {
-      setPhase("waiting");
+      setReading(null);
+      setPhase("idle");
       setReveal(0);
     }
-  }, [extinguish, focus, id]);
-
-  const leave = useCallback(() => {
-    if (hold.active) return;
-    focus(null);
-  }, [focus]);
-
-  useEffect(() => {
-    hold.active = false;
-    hold.progress = 0;
-    return () => {
-      hold.active = false;
-      hold.progress = 0;
-    };
   }, []);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === " " && !e.repeat) {
-        e.preventDefault();
-        start();
-      }
-      if (e.key === "Escape") leave();
+    const down = (e: MouseEvent) => {
+      if (e.button === 0 && document.pointerLockElement) start();
     };
-    const up = (e: KeyboardEvent) => {
+    const up = (e: MouseEvent) => {
+      if (e.button === 0) release();
+    };
+    const keyDown = (e: KeyboardEvent) => {
+      if (e.key !== " " || e.repeat || e.target instanceof HTMLTextAreaElement) return;
+      e.preventDefault();
+      start();
+    };
+    const keyUp = (e: KeyboardEvent) => {
       if (e.key === " ") release();
     };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    window.addEventListener("blur", release);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-      window.removeEventListener("blur", release);
+    const lockChange = () => {
+      if (!document.pointerLockElement) release();
     };
-  }, [start, release, leave]);
+    window.addEventListener("mousedown", down);
+    window.addEventListener("mouseup", up);
+    window.addEventListener("keydown", keyDown);
+    window.addEventListener("keyup", keyUp);
+    window.addEventListener("blur", release);
+    document.addEventListener("pointerlockchange", lockChange);
+    return () => {
+      window.removeEventListener("mousedown", down);
+      window.removeEventListener("mouseup", up);
+      window.removeEventListener("keydown", keyDown);
+      window.removeEventListener("keyup", keyUp);
+      window.removeEventListener("blur", release);
+      document.removeEventListener("pointerlockchange", lockChange);
+    };
+  }, [start, release]);
 
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   return (
-    <div
-      className="reader"
-      data-phase={phase}
-      onPointerDown={(e) => {
-        if ((e.target as HTMLElement).closest("button")) return;
-        e.currentTarget.setPointerCapture(e.pointerId);
-        start();
-      }}
-      onPointerUp={release}
-      onPointerCancel={release}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      <div className="reader-letter" ref={letter} aria-live="polite">
-        <p>{phase === "holding" || phase === "fading" ? text : ""}</p>
+    <>
+      <div className="reader" data-phase={phase} aria-live="polite">
+        <div className="reader-letter" ref={letter}>
+          <p>{readingId && phase !== "idle" ? text : ""}</p>
+        </div>
       </div>
 
-      <p className="reader-hint">
-        {phase === "waiting" && "press and hold to read"}
-        {phase === "gone" && "it's gone now."}
-      </p>
+      {rested && <p className="rested">read. it can rest now.</p>}
 
-      {phase === "waiting" && (
-        <button className="reader-back" onClick={leave}>
-          step back
+      {touch && (aimedId || phase === "holding") && phase !== "fading" && (
+        <button
+          className="touch-read"
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            start();
+          }}
+          onPointerUp={release}
+          onPointerCancel={release}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          hold to read
         </button>
       )}
-    </div>
+    </>
   );
 }

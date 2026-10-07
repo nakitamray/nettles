@@ -1,37 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { setMuted } from "@/lib/drone";
+import { useEffect } from "react";
+import { setMuted } from "@/lib/ambience";
 import { useField } from "@/lib/store";
 
 export function Hud() {
-  const entered = useField((s) => s.entered);
   const muted = useField((s) => s.muted);
   const toggleMute = useField((s) => s.toggleMute);
-  const focusedId = useField((s) => s.focusedId);
-  const [hint, setHint] = useState(true);
+  const locked = useField((s) => s.locked);
+  const touch = useField((s) => s.touch);
+  const aimedId = useField((s) => s.aimedId);
+  const readingId = useField((s) => s.readingId);
 
   useEffect(() => setMuted(muted), [muted]);
 
   useEffect(() => {
-    if (!entered) return;
-    const t = window.setTimeout(() => setHint(false), 12000);
-    return () => window.clearTimeout(t);
-  }, [entered]);
+    const key = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "m" && !(e.target instanceof HTMLTextAreaElement)) toggleMute();
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [toggleMute]);
 
-  if (!entered) return null;
+  const active = locked || touch;
 
   return (
-    <div className="hud" data-dim={!!focusedId}>
+    <div className="hud" data-reading={!!readingId}>
       <span className="hud-mark">nettles</span>
       <button className="hud-sound" onClick={toggleMute} aria-label={muted ? "turn sound on" : "turn sound off"}>
         {muted ? "sound off" : "sound on"}
       </button>
-      <p className="hud-hint" data-show={hint && !focusedId}>
-        drag to look around. click the ground to walk, or use wasd.
-        <br />
-        the ones that glow can be read.
-      </p>
+
+      {active && <div className="crosshair" data-aimed={!!aimedId} />}
+
+      {active && aimedId && !readingId && (
+        <p className="aim-hint">{touch ? "hold the button to read" : "hold click to read"}</p>
+      )}
     </div>
   );
 }

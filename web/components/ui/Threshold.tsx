@@ -1,6 +1,7 @@
 "use client";
 
-import { startDrone } from "@/lib/drone";
+import { startAmbience } from "@/lib/ambience";
+import { requestLock } from "@/lib/lock";
 import { useField } from "@/lib/store";
 
 export function Threshold() {
@@ -8,19 +9,20 @@ export function Threshold() {
   const enter = useField((s) => s.enter);
 
   const go = () => {
-    startDrone();
+    startAmbience();
     enter();
+    requestLock();
   };
 
   return (
     <div className="threshold" data-gone={entered} aria-hidden={entered}>
       <div className="threshold-inner">
         <h1 className="wordmark">Nettles</h1>
-        <p className="threshold-line">a field for the letters you never sent.</p>
+        <p className="threshold-line">a quiet field for the things you never got to say.</p>
         <button className="threshold-enter" onClick={go} disabled={entered}>
-          enter the field
+          step inside
         </button>
-        <p className="threshold-small">sound on, if you can.</p>
+        <p className="threshold-small">headphones, if you have them.</p>
       </div>
     </div>
   );
