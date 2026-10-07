@@ -6,11 +6,13 @@ type FoliageOptions = {
   sway: number;
   // grass patches wrap around the viewer instead of ending at the edge
   wrap?: number;
+  // hanging willow strands carry their own per-vertex sway weight
+  weighted?: boolean;
 };
 
 const f = (n: number) => n.toFixed(2);
 
-export function applyFoliage(material: Material, { sway, wrap }: FoliageOptions) {
+export function applyFoliage(material: Material, { sway, wrap, weighted }: FoliageOptions) {
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = foliageUniforms.uTime;
     shader.uniforms.uCenter = foliageUniforms.uCenter;
@@ -30,7 +32,8 @@ export function applyFoliage(material: Material, { sway, wrap }: FoliageOptions)
         `#include <common>
         uniform float uTime;
         uniform float uSway;
-        uniform vec2 uCenter;`,
+        uniform vec2 uCenter;
+        ${weighted ? "attribute float aSway;" : ""}`,
       )
       .replace(
         "#include <project_vertex>",
@@ -40,7 +43,7 @@ export function applyFoliage(material: Material, { sway, wrap }: FoliageOptions)
           mvPosition = instanceMatrix * mvPosition;
         #endif
         ${wrapChunk}
-        float h = clamp(transformed.y, 0.0, 1.0);
+        float h = ${weighted ? "aSway" : "clamp(transformed.y, 0.0, 1.0)"};
         vec2 wp = mvPosition.xz;
         float gust = sin(uTime * 0.31 + wp.x * 0.041 + wp.y * 0.027) * 0.5 + 0.5;
         gust *= sin(uTime * 0.13 + wp.y * 0.019) * 0.35 + 0.65;
@@ -53,5 +56,5 @@ export function applyFoliage(material: Material, { sway, wrap }: FoliageOptions)
         `,
       );
   };
-  material.customProgramCacheKey = () => `foliage-${sway}-${wrap ?? 0}`;
+  material.customProgramCacheKey = () => `foliage-${sway}-${wrap ?? 0}-${weighted ? 1 : 0}`;
 }

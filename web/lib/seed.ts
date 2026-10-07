@@ -4,6 +4,27 @@ import type { Stalk } from "./types";
 
 export const FIELD_RADIUS = 140;
 
+export type Willow = { x: number; z: number; scale: number; rotation: number };
+
+export function seedWillows(count: number): Willow[] {
+  const rand = mulberry32(404);
+  // a couple of trees right where you arrive, so you start underneath them
+  const willows: Willow[] = [
+    { x: 4.5, z: 11, scale: 1.15, rotation: 2.2 },
+    { x: -8, z: 5, scale: 1, rotation: 0.4 },
+  ];
+  let tries = 0;
+  while (willows.length < count && tries++ < 5000) {
+    const r = 14 + Math.sqrt(rand()) * (FIELD_RADIUS - 14);
+    const a = rand() * Math.PI * 2;
+    const x = Math.cos(a) * r;
+    const z = Math.sin(a) * r;
+    if (willows.some((w) => Math.hypot(w.x - x, w.z - z) < 13)) continue;
+    willows.push({ x, z, scale: 0.8 + rand() * 0.5, rotation: rand() * Math.PI * 2 });
+  }
+  return willows;
+}
+
 // Stand-in for the UMAP layout: stalks bunch up in loose clusters the way
 // similar letters will once coordinates come from the embeddings.
 export function seedField(count = 2400): Stalk[] {
