@@ -53,8 +53,8 @@ export function Motes({ count }: { count: number }) {
           varying float vFade;
           void main() {
             float d = length(gl_PointCoord - 0.5);
-            float a = smoothstep(0.5, 0.0, d) * vFade * 0.35;
-            gl_FragColor = vec4(vec3(0.95, 0.92, 0.82), a);
+            float a = smoothstep(0.5, 0.0, d) * vFade * 0.5;
+            gl_FragColor = vec4(vec3(1.0, 0.93, 0.74), a);
           }
         `,
       }),

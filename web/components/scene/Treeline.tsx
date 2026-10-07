@@ -2,7 +2,8 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { Color, Group, InstancedMesh, Object3D, ShaderMaterial } from "three";
+import { BoxGeometry, BufferGeometry, Color, ConeGeometry, CylinderGeometry, Group, InstancedMesh, Object3D, ShaderMaterial } from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { createBroadleafGeometry, createFirGeometry } from "@/lib/geometry";
 import { palette } from "@/lib/palette";
 import { mulberry32 } from "@/lib/random";
@@ -22,7 +23,7 @@ function silhouette(color: string) {
     fog: false,
     uniforms: {
       uColor: { value: new Color(color) },
-      uMist: { value: new Color(palette.horizon) },
+      uMist: { value: new Color(palette.mist) },
     },
     vertexShader: /* glsl */ `
       varying float vHeight;
@@ -37,7 +38,7 @@ function silhouette(color: string) {
       uniform vec3 uMist;
       varying float vHeight;
       void main() {
-        float mist = smoothstep(9.0, 0.0, vHeight) * 0.75;
+        float mist = smoothstep(10.0, 0.0, vHeight) * 0.7;
         gl_FragColor = vec4(mix(uColor, uMist, mist), 1.0);
         #include <colorspace_fragment>
       }
@@ -67,7 +68,7 @@ function Ring({ radius, color, count, seed, height, gaps }: RingProps) {
       const s = height * (0.55 + rand() * 0.8);
       dummy.scale.set(s * (0.8 + rand() * 0.5), s, s * (0.8 + rand() * 0.5));
       dummy.updateMatrix();
-      if (rand() < 0.6) firs.current?.setMatrixAt(f++, dummy.matrix);
+      if (rand() < 0.3) firs.current?.setMatrixAt(f++, dummy.matrix);
       else broad.current?.setMatrixAt(b++, dummy.matrix);
     }
     if (firs.current) {
@@ -88,6 +89,35 @@ function Ring({ radius, color, count, seed, height, gaps }: RingProps) {
   );
 }
 
+function chapelGeometry() {
+  const nave = new BoxGeometry(6, 4.5, 11);
+  nave.translate(0, 2.25, 0);
+  const roof = new CylinderGeometry(0.01, 4.4, 3, 4, 1, false, Math.PI / 4);
+  roof.scale(1, 1, 2.6);
+  roof.translate(0, 6, 0);
+  const tower = new BoxGeometry(3, 10, 3);
+  tower.translate(0, 5, 6.5);
+  const spire = new ConeGeometry(2, 8, 4);
+  spire.rotateY(Math.PI / 4);
+  spire.translate(0, 14, 6.5);
+  const parts: BufferGeometry[] = [nave, roof, tower, spire].map((g) => (g.index ? g.toNonIndexed() : g));
+  return mergeGeometries(parts)!;
+}
+
+// A little white chapel out in the haze. Like the trees, you never reach it.
+function Chapel() {
+  const geometry = useMemo(() => chapelGeometry(), []);
+  const material = useMemo(() => silhouette(palette.chapel), []);
+  return (
+    <instancedMesh
+      args={[geometry, material, 1]}
+      position={[-150, -1, -170]}
+      rotation-y={0.5}
+      frustumCulled={false}
+    />
+  );
+}
+
 // The trees travel with you, so the field never quite reaches them.
 export function Treeline() {
   const group = useRef<Group>(null);
@@ -99,6 +129,7 @@ export function Treeline() {
     <group ref={group}>
       <Ring radius={270} color={palette.treeFar} count={260} seed={3} height={20} gaps={0.35} />
       <Ring radius={175} color={palette.treeNear} count={170} seed={9} height={11} gaps={0.75} />
+      <Chapel />
     </group>
   );
 }

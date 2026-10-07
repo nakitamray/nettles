@@ -44,10 +44,10 @@ function leaf(length: number, width: number) {
 }
 
 export function createNettleGeometry() {
-  const stemLow = new Color("#3a2f2a");
-  const stemHigh = new Color("#3d4a2c");
-  const leafColor = new Color("#3a4a2d");
-  const leafTip = new Color("#59683f");
+  const stemLow = new Color("#6e5e44");
+  const stemHigh = new Color("#6f7a48");
+  const leafColor = new Color("#5d7038");
+  const leafTip = new Color("#8a9450");
 
   const stem = new CylinderGeometry(0.006, 0.017, 1, 5, 6, true);
   stem.translate(0, 0.5, 0);
@@ -76,7 +76,7 @@ export function createNettleGeometry() {
 }
 
 export function createBladeGeometry() {
-  const g = new PlaneGeometry(0.05, 1, 1, 4);
+  const g = new PlaneGeometry(0.07, 1, 1, 4);
   g.translate(0, 0.5, 0);
   const pos = g.getAttribute("position");
   for (let i = 0; i < pos.count; i++) {
@@ -85,8 +85,8 @@ export function createBladeGeometry() {
     pos.setZ(i, y * y * 0.12);
   }
   g.computeVertexNormals();
-  const base = new Color("#1b2016");
-  const tip = new Color("#767a58");
+  const base = new Color("#6d6b45");
+  const tip = new Color("#d3c78c");
   return paint(g, (y) => base.clone().lerp(tip, Math.pow(y, 1.4)));
 }
 

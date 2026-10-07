@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { BackSide, Color, Mesh, ShaderMaterial } from "three";
 import { palette } from "@/lib/palette";
+import { SUN_DIRECTION } from "@/lib/shared";
 
 const vertex = /* glsl */ `
   varying vec3 vDir;
@@ -14,9 +15,11 @@ const vertex = /* glsl */ `
 `;
 
 const fragment = /* glsl */ `
-  uniform vec3 uHorizon;
-  uniform vec3 uZenith;
-  uniform vec3 uGlow;
+  uniform vec3 uMist;
+  uniform vec3 uSky;
+  uniform vec3 uHigh;
+  uniform vec3 uSunColor;
+  uniform vec3 uSunDir;
   uniform float uTime;
   varying vec3 vDir;
 
@@ -42,19 +45,18 @@ const fragment = /* glsl */ `
   void main() {
     vec3 dir = normalize(vDir);
     float h = max(dir.y, 0.0);
-    vec3 color = mix(uHorizon, uZenith, pow(h, 0.55));
+    vec3 color = mix(uMist, uSky, smoothstep(0.0, 0.25, h));
+    color = mix(color, uHigh, smoothstep(0.3, 1.0, h));
 
-    // low sun buried somewhere behind the overcast
-    vec3 sunDir = normalize(vec3(-0.55, 0.08, -0.83));
-    float sun = max(dot(dir, sunDir), 0.0);
-    color += uGlow * pow(sun, 6.0) * 0.32 * (1.0 - h);
+    // a soft sun smothered in haze
+    float sun = max(dot(dir, uSunDir), 0.0);
+    color += uSunColor * (pow(sun, 3.0) * 0.25 + pow(sun, 40.0) * 0.6 + pow(sun, 600.0) * 1.5);
 
-    vec2 uv = dir.xz / (dir.y + 0.25);
-    float clouds = fbm(uv * 1.6 + vec2(uTime * 0.004, uTime * 0.002));
-    color = mix(color, color * 0.72, smoothstep(0.45, 0.8, clouds) * smoothstep(0.02, 0.3, h));
+    vec2 uv = dir.xz / (dir.y + 0.3);
+    float clouds = fbm(uv * 1.4 + vec2(uTime * 0.003, uTime * 0.0015));
+    color = mix(color, color * 1.06, smoothstep(0.5, 0.8, clouds) * smoothstep(0.05, 0.35, h));
 
-    // below the horizon just fade into the fog
-    color = mix(color, uHorizon, smoothstep(0.0, -0.05, dir.y));
+    color = mix(color, uMist, smoothstep(0.0, -0.05, dir.y));
     gl_FragColor = vec4(color, 1.0);
   }
 `;
@@ -70,9 +72,11 @@ export function Sky() {
         depthWrite: false,
         fog: false,
         uniforms: {
-          uHorizon: { value: new Color(palette.horizon) },
-          uZenith: { value: new Color(palette.zenith) },
-          uGlow: { value: new Color(palette.glow) },
+          uMist: { value: new Color(palette.mist) },
+          uSky: { value: new Color(palette.sky) },
+          uHigh: { value: new Color(palette.skyHigh) },
+          uSunColor: { value: new Color(palette.sun) },
+          uSunDir: { value: SUN_DIRECTION.clone() },
           uTime: { value: 0 },
         },
       }),

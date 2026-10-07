@@ -27,7 +27,7 @@ export function Fence() {
       });
     }
 
-    const material = new LineBasicMaterial({ color: "#1d1e19" });
+    const material = new LineBasicMaterial({ color: "#5a4e3c" });
     const wires = [0.55, 0.95].map((h) => {
       const points: Vector3[] = [];
       for (let i = 0; i < n - 1; i++) {
@@ -57,7 +57,7 @@ export function Fence() {
           <cylinderGeometry
             args={post.metal ? [0.022, 0.022, post.height, 6] : [0.06, 0.075, post.height, 7]}
           />
-          <meshStandardMaterial color={post.metal ? "#8c8a80" : "#3a3328"} roughness={0.95} />
+          <meshStandardMaterial color={post.metal ? "#b8b09a" : "#6b5a44"} roughness={0.95} />
         </mesh>
       ))}
       {wires.map((wire, i) => (
