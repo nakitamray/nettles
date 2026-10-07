@@ -28,8 +28,10 @@ Inspired by the Southern Gothic mood of Ethel Cain's music.
 - `api/` (coming): Python, FastAPI, PyTorch, umap-learn
 - Supabase (Postgres + pgvector)
 
-Sound: if `web/public/audio/ambience.mp3` exists it loops in the background.
-If it doesn't, a soft pad with chimes and birdsong is generated in the browser.
+Music: "Nettles" by Ethel Cain plays through YouTube's embedded player in the
+corner. All rights to the song belong to the artist. If the player can't load,
+or you close it, a soft pad with chimes and birdsong is generated in the
+browser instead.
 
 Fonts: the handwriting fonts are licensed separately, so they aren't in this
 repo. Free Google fonts are used in their place.

@@ -1,17 +1,3 @@
-/* Licensed fonts are kept out of the repo. When the files aren't there,
-   the free Google fonts from layout.tsx are used instead. */
-@font-face {
-  font-family: "Dear Joe";
-  src: url("/fonts/licensed/DearJoe.otf") format("opentype");
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Biro Script";
-  src: url("/fonts/licensed/BiroScript.otf") format("opentype");
-  font-display: swap;
-}
-
 :root {
   --ink: #2e281d;
   --ink-soft: #5c5340;
@@ -558,5 +544,67 @@ button {
   .aim-hint,
   .pause {
     animation: none;
+  }
+}
+
+/* now playing */
+
+.now-playing {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  width: 216px;
+  padding: 8px 8px 6px;
+  background: rgba(243, 236, 217, 0.82);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(70, 60, 30, 0.15);
+  backdrop-filter: blur(4px);
+  z-index: 9;
+}
+
+.now-playing-player iframe {
+  display: block;
+  border: 0;
+  border-radius: 4px;
+}
+
+.now-playing-credit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 2px 0;
+  font-size: 1.15rem;
+  line-height: 1.1;
+}
+
+.now-playing-credit a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.now-playing-credit a span {
+  color: var(--ink-soft);
+}
+
+.now-playing-credit button {
+  border: 0;
+  background: none;
+  padding: 0 4px;
+  font-size: 1.3rem;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.now-playing-credit button:hover {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .now-playing {
+    left: auto;
+    right: 12px;
+    bottom: auto;
+    top: 52px;
   }
 }
